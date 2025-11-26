@@ -34,7 +34,7 @@
 #define kI2CPropFsHCntKey               "I2CFsHighCount"
 #define kI2CPropFsLCntKey               "I2CFsLowCount"
 
-#define kI2CPropMaskQuirk               "AccessIntrMaskWorkaround"
+#define kI2CPropMaskQuirkKey            "AccessIntrMaskWorkaround"
 
 #define LPSS_PRIVATE_CLOCK_GATING       0x800
 

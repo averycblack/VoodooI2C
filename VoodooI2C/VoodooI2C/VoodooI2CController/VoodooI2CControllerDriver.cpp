@@ -130,7 +130,7 @@ IOReturn VoodooI2CControllerDriver::getBusConfig() {
     bus_device.acpi_config.ss_lcnt = getNumProperty(kI2CPropSsLCntKey);
     bus_device.acpi_config.fs_hcnt = getNumProperty(kI2CPropFsHCntKey);
     bus_device.acpi_config.fs_lcnt = getNumProperty(kI2CPropFsLCntKey);
-    bus_device.access_intr_mask_workaround = getBoolProperty(kI2CPropMaskQuirk);
+    bus_device.access_intr_mask_workaround = getBoolProperty(kI2CPropMaskQuirkKey);
 
     sdaFallNs = getNumProperty(kI2CPropSdaFallNsKey) ?: 300;  // 0.3us default
     sclFallNs = getNumProperty(kI2CPropSclFallNsKey) ?: 300;  // 0.3us default
