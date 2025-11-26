@@ -97,6 +97,16 @@ UInt32 VoodooI2CControllerDriver::getNumProperty(const char *key) {
     return prop->unsigned32BitValue();
 }
 
+bool VoodooI2CControllerDriver::getBoolProperty(const char *key) {
+    OSBoolean *prop = OSDynamicCast(OSBoolean, getProperty(key, gIOServicePlane));
+    if (!prop) {
+        IOLog("%s::%s Failed to get property %s\n", getName(), bus_device.name, key);
+        return false;
+    }
+
+    return prop->getValue();
+}
+
 IOReturn VoodooI2CControllerDriver::getBusConfig() {
     UInt32 sdaFallNs, sclFallNs;
 
@@ -120,6 +130,7 @@ IOReturn VoodooI2CControllerDriver::getBusConfig() {
     bus_device.acpi_config.ss_lcnt = getNumProperty(kI2CPropSsLCntKey);
     bus_device.acpi_config.fs_hcnt = getNumProperty(kI2CPropFsHCntKey);
     bus_device.acpi_config.fs_lcnt = getNumProperty(kI2CPropFsLCntKey);
+    bus_device.access_intr_mask_workaround = getBoolProperty(kI2CPropMaskQuirk);
 
     sdaFallNs = getNumProperty(kI2CPropSdaFallNsKey) ?: 300;  // 0.3us default
     sclFallNs = getNumProperty(kI2CPropSclFallNsKey) ?: 300;  // 0.3us default
@@ -255,7 +266,7 @@ void VoodooI2CControllerDriver::handleInterrupt(OSObject* target, void* refCon, 
 wakeup:
     if (((status & (DW_IC_INTR_TX_ABRT | DW_IC_INTR_STOP_DET)) || bus_device.message_error) && (bus_device.receive_outstanding == 0)) {
         command_gate->commandWakeup(&bus_device.command_complete);
-    } else if (nub->controller->physical_device.access_intr_mask_workaround) {
+    } else if (bus_device.access_intr_mask_workaround) {
         /* Workaround to trigger pending interrupt */
         status = readRegister(DW_IC_INTR_MASK);
         writeRegister(0, DW_IC_INTR_MASK);
@@ -512,7 +523,7 @@ void VoodooI2CControllerDriver::requestTransferI2C() {
     VoodooI2CControllerBusMessage *messages = bus_device.messages;
     UInt32 i2c_configuration, i2c_target = 0, orig;
 
-    if (nub->controller->physical_device.access_intr_mask_workaround) {
+    if (bus_device.access_intr_mask_workaround) {
         // Linux code works with black magic, on macOS with AMD I2C turning off the adapter
         // and rewriting the bus settings is required
         initialiseBus();

@@ -56,6 +56,7 @@ typedef struct {
     UInt32 transaction_buffer_length;
     UInt8* transaction_buffer;
     UInt32 transaction_fifo_depth;
+    bool access_intr_mask_workaround;
 } VoodooI2CControllerBusDevice;
 
 class VoodooI2CController;
@@ -157,6 +158,14 @@ class EXPORT VoodooI2CControllerDriver : public IOService {
      * @return Property value on success, 0 on failure.
      */
     UInt32 getNumProperty(const char *key);
+
+    /* Request a boolean property from this service or any parent in the
+     * IOService tree.
+     * @key Property name to lookup in IOService tree.
+     *
+     * @return Property value on success, false on failure.
+     */
+    bool getBoolProperty(const char *key);
 
     /* Calculates bus timings using ACPI and Controller properties.
      *
